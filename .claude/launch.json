@@ -1,0 +1,14 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "streamroll-dev",
+      "runtimeExecutable": "/bin/bash",
+      "runtimeArgs": [
+        "-c",
+        "export PATH=/Users/Noo/.nvm/versions/node/v20.20.2/bin:$PATH && npm run dev"
+      ],
+      "port": 3000
+    }
+  ]
+}
