@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 
 const TABS = [
   { href: "/roster", label: "Roster" },
@@ -6,11 +8,28 @@ const TABS = [
   { href: "/reminder", label: "Reminder" },
 ] as const;
 
-export default function TabsLayout({
+export default async function TabsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("onboarded")
+      .eq("id", user.id)
+      .single();
+
+    if (profile && !profile.onboarded) {
+      redirect("/onboarding");
+    }
+  }
+
   return (
     <div className="flex min-h-dvh flex-col">
       <main className="flex-1 overflow-y-auto pb-16">{children}</main>

@@ -1,4 +1,4 @@
-// Hand-written to match supabase/migrations/0001_init.sql.
+// Hand-written to match supabase/migrations/0001-0003.
 // Once the Supabase project is live, regenerate with:
 //   npx supabase gen types typescript --project-id <ref> > src/lib/types/database.ts
 
@@ -9,18 +9,22 @@ export type Database = {
         Row: {
           id: string;
           region: string;
+          onboarded: boolean;
           created_at: string;
         };
         Insert: {
           id: string;
           region?: string;
+          onboarded?: boolean;
           created_at?: string;
         };
         Update: {
           id?: string;
           region?: string;
+          onboarded?: boolean;
           created_at?: string;
         };
+        Relationships: [];
       };
       services: {
         Row: {
@@ -41,6 +45,7 @@ export type Database = {
           colour?: string;
           is_free?: boolean;
         };
+        Relationships: [];
       };
       roster_slots: {
         Row: {
@@ -64,6 +69,7 @@ export type Database = {
           month?: number;
           year?: number;
         };
+        Relationships: [];
       };
       watchlist_items: {
         Row: {
@@ -96,6 +102,25 @@ export type Database = {
           source?: "manual" | "paste";
           added_at?: string;
         };
+        Relationships: [];
+      };
+      user_services: {
+        Row: {
+          id: string;
+          user_id: string;
+          service_id: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          service_id: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          service_id?: string;
+        };
+        Relationships: [];
       };
       reminder_log: {
         Row: {
@@ -116,7 +141,12 @@ export type Database = {
           service_id?: string;
           sent_at?: string;
         };
+        Relationships: [];
       };
     };
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
+    Enums: Record<string, never>;
+    CompositeTypes: Record<string, never>;
   };
 };
