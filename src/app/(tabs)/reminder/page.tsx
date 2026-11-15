@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ServiceDot } from "@/components/ServiceDot";
+import { CANCEL_LINKS } from "@/lib/cancel-links";
 import {
   MONTH_NAMES,
   changeovers,
@@ -74,6 +75,8 @@ export default async function ReminderPage() {
   }
 
   const close = next !== undefined && next.daysAway <= CLOSE_DAYS;
+  const cancelName = next ? name(next.fromServiceId) : null;
+  const cancelLink = cancelName ? CANCEL_LINKS[cancelName] : undefined;
 
   return (
     <div className="px-6 py-8">
@@ -129,9 +132,27 @@ export default async function ReminderPage() {
               </li>
             )}
           </ol>
+          {cancelLink && (
+            <div className="mt-4">
+              <a
+                href={cancelLink.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`inline-block rounded-md border px-4 py-2.5 text-base font-medium ${
+                  close
+                    ? "border-renewal text-renewal"
+                    : "border-static text-paper"
+                }`}
+              >
+                Open {cancelName} account ↗
+              </a>
+              <p className="mt-2 text-xs text-static">{cancelLink.path}.</p>
+            </div>
+          )}
           <p className="mt-3 text-xs text-static">
             Check each service&apos;s own billing date. Cancelling early usually
-            keeps access until the paid period ends.
+            keeps access until the paid period ends. Billed through Apple,
+            Google Play or a telco? Cancel with them instead.
           </p>
         </section>
       )}
