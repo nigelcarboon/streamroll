@@ -3,6 +3,7 @@
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { Wordmark } from "@/components/Wordmark";
 
 function LoginForm() {
   const searchParams = useSearchParams();
@@ -28,8 +29,9 @@ function LoginForm() {
 
   if (status === "sent") {
     return (
-      <p className="text-center text-sm text-neutral-500">
-        Check your email — we sent a sign-in link to {email}.
+      <p className="max-w-xs text-center text-sm text-static">
+        Sign-in link sent to <span className="text-paper">{email}</span>. Check
+        your email.
       </p>
     );
   }
@@ -39,29 +41,34 @@ function LoginForm() {
       onSubmit={handleSubmit}
       className="flex w-full max-w-xs flex-col gap-3"
     >
+      <label htmlFor="email" className="sr-only">
+        Email address
+      </label>
       <input
+        id="email"
         type="email"
         required
+        autoComplete="email"
         placeholder="you@example.com"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        className="rounded-md border border-neutral-300 px-4 py-3 text-base outline-none focus:border-neutral-900"
+        className="rounded-md border border-line bg-standby px-4 py-3 text-base text-paper outline-none placeholder:text-static focus:border-signal"
       />
       <button
         type="submit"
         disabled={status === "sending"}
-        className="rounded-md bg-neutral-900 px-4 py-3 text-base font-medium text-white disabled:opacity-50"
+        className="rounded-md bg-signal px-4 py-3 text-base font-semibold text-ground disabled:opacity-50"
       >
         {status === "sending" ? "Sending…" : "Send sign-in link"}
       </button>
       {status === "error" && (
-        <p className="text-sm text-red-600">
-          Something went wrong — try again.
+        <p role="alert" className="text-sm text-renewal">
+          That didn&apos;t send. Try again.
         </p>
       )}
       {showLinkError && (
-        <p className="text-sm text-red-600">
-          That link expired or was already used — send a new one.
+        <p role="alert" className="text-sm text-renewal">
+          That link expired or was already used. Send a new one.
         </p>
       )}
     </form>
@@ -70,8 +77,15 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center gap-8 px-6">
-      <h1 className="text-2xl font-semibold tracking-tight">StreamRoll</h1>
+    <main className="flex min-h-dvh flex-col items-center justify-center gap-10 px-6">
+      <div className="flex flex-col items-center gap-3">
+        <h1>
+          <Wordmark size="lg" />
+        </h1>
+        <p className="text-sm text-static">
+          Your streaming rotation, planned in advance.
+        </p>
+      </div>
       <Suspense>
         <LoginForm />
       </Suspense>

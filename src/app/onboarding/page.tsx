@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { ServiceDot } from "@/components/ServiceDot";
+import { Wordmark } from "@/components/Wordmark";
 import { saveServices, skipOnboarding } from "./actions";
 
 export default async function OnboardingPage() {
@@ -21,31 +23,28 @@ export default async function OnboardingPage() {
   );
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-sm flex-col px-6 py-10">
-      <h1 className="text-2xl font-semibold tracking-tight">
-        Which services do you use?
+    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-6 py-8">
+      <Wordmark />
+      <h1 className="mt-10 font-display text-2xl font-bold tracking-tight">
+        Which services do you pay for?
       </h1>
-      <p className="mt-2 text-sm text-neutral-500">
-        Pick the paid ones you rotate through. You can change this anytime.
+      <p className="mt-2 text-sm text-static">
+        Pick the ones you rotate through. You can change this anytime.
       </p>
 
-      <form action={saveServices} className="mt-8 flex flex-1 flex-col">
-        <ul className="flex flex-col gap-1">
+      <form action={saveServices} className="mt-6 flex flex-1 flex-col">
+        <ul className="flex flex-col gap-2">
           {paidServices.map((service) => (
             <li key={service.id}>
-              <label className="flex items-center gap-3 rounded-md px-2 py-3 active:bg-neutral-50">
+              <label className="flex items-center gap-3 rounded-md border border-line bg-standby px-4 py-3.5 has-checked:border-signal">
                 <input
                   type="checkbox"
                   name="service_id"
                   value={service.id}
                   defaultChecked={selectedIds.has(service.id)}
-                  className="h-5 w-5 rounded border-neutral-300"
+                  className="h-5 w-5 accent-signal"
                 />
-                <span
-                  className="h-3 w-3 rounded-full"
-                  style={{ backgroundColor: service.colour }}
-                  aria-hidden
-                />
+                <ServiceDot colour={service.colour} />
                 <span className="text-base">{service.name}</span>
               </label>
             </li>
@@ -53,32 +52,26 @@ export default async function OnboardingPage() {
         </ul>
 
         {freeServices.length > 0 && (
-          <div className="mt-6">
-            <p className="text-xs font-medium uppercase tracking-wide text-neutral-400">
-              Always free — no need to pick these
-            </p>
-            <ul className="mt-2 flex flex-col gap-1">
+          <div className="mt-8">
+            <p className="data text-xs text-static">Always free. Nothing to pick.</p>
+            <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-2">
               {freeServices.map((service) => (
                 <li
                   key={service.id}
-                  className="flex items-center gap-3 px-2 py-1 text-neutral-500"
+                  className="flex items-center gap-2 text-sm text-static"
                 >
-                  <span
-                    className="h-3 w-3 rounded-full"
-                    style={{ backgroundColor: service.colour }}
-                    aria-hidden
-                  />
-                  <span className="text-sm">{service.name}</span>
+                  <ServiceDot colour={service.colour} size={8} />
+                  {service.name}
                 </li>
               ))}
             </ul>
           </div>
         )}
 
-        <div className="mt-auto flex flex-col gap-3 pt-8">
+        <div className="mt-auto pt-10">
           <button
             type="submit"
-            className="rounded-md bg-neutral-900 px-4 py-3 text-base font-medium text-white"
+            className="w-full rounded-md bg-signal px-4 py-3 text-base font-semibold text-ground"
           >
             Continue
           </button>
@@ -88,7 +81,7 @@ export default async function OnboardingPage() {
       <form action={skipOnboarding}>
         <button
           type="submit"
-          className="mt-3 w-full text-center text-sm text-neutral-400"
+          className="mt-3 w-full py-2 text-center text-sm text-static"
         >
           Skip for now
         </button>

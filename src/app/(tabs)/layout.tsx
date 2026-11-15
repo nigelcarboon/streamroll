@@ -1,12 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-
-const TABS = [
-  { href: "/roster", label: "Roster" },
-  { href: "/watchlist", label: "Watchlist" },
-  { href: "/reminder", label: "Reminder" },
-] as const;
+import { TabBar } from "@/components/TabBar";
+import { Wordmark } from "@/components/Wordmark";
+import { signOut } from "./actions";
 
 export default async function TabsLayout({
   children,
@@ -31,19 +28,18 @@ export default async function TabsLayout({
   }
 
   return (
-    <div className="flex min-h-dvh flex-col">
-      <main className="flex-1 overflow-y-auto pb-16">{children}</main>
-      <nav className="fixed inset-x-0 bottom-0 flex border-t border-neutral-200 bg-white">
-        {TABS.map((tab) => (
-          <Link
-            key={tab.href}
-            href={tab.href}
-            className="flex-1 py-3 text-center text-sm font-medium text-neutral-600"
-          >
-            {tab.label}
-          </Link>
-        ))}
-      </nav>
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
+      <header className="flex items-center justify-between px-6 pt-6">
+        <Wordmark />
+        <div className="flex items-center gap-4 text-sm text-static">
+          <Link href="/onboarding">Services</Link>
+          <form action={signOut}>
+            <button type="submit">Sign out</button>
+          </form>
+        </div>
+      </header>
+      <main className="flex-1 pb-24">{children}</main>
+      <TabBar />
     </div>
   );
 }

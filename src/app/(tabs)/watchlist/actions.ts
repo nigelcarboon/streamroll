@@ -22,6 +22,7 @@ export async function addWatchlistItem(formData: FormData) {
   });
 
   revalidatePath("/watchlist");
+  revalidatePath("/reminder");
 }
 
 export async function setWatchlistStatus(
@@ -41,6 +42,7 @@ export async function setWatchlistStatus(
     .eq("user_id", user.id);
 
   revalidatePath("/watchlist");
+  revalidatePath("/reminder");
 }
 
 export async function removeWatchlistItem(id: string) {
@@ -57,4 +59,5 @@ export async function removeWatchlistItem(id: string) {
     .eq("user_id", user.id);
 
   revalidatePath("/watchlist");
+  revalidatePath("/reminder");
 }
