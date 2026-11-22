@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { duplicateIndex } from "@/lib/titles";
 import { createClient } from "@/lib/supabase/server";
 
 export async function addWatchlistItem(formData: FormData) {
@@ -13,6 +15,15 @@ export async function addWatchlistItem(formData: FormData) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return;
+
+  const { data: existing } = await supabase
+    .from("watchlist_items")
+    .select("title")
+    .eq("user_id", user.id);
+  const match = duplicateIndex((existing ?? []).map((i) => i.title))(title);
+  if (match?.kind === "same") {
+    redirect(`/watchlist?dupe=${encodeURIComponent(match.existing)}`);
+  }
 
   await supabase.from("watchlist_items").insert({
     user_id: user.id,

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ServiceDot } from "@/components/ServiceDot";
+import { titleKey } from "@/lib/titles";
 import {
   type Availability,
   availabilityFor,
@@ -43,11 +44,12 @@ function AvailabilityTag({ availability }: { availability: Availability }) {
 export default async function WatchlistPage({
   searchParams,
 }: {
-  searchParams: Promise<{ added?: string; skipped?: string }>;
+  searchParams: Promise<{ added?: string; skipped?: string; dupe?: string }>;
 }) {
   const params = await searchParams;
   const added = Number.parseInt(params.added ?? "", 10);
   const skipped = Number.parseInt(params.skipped ?? "", 10) || 0;
+  const dupe = params.dupe?.slice(0, 200);
 
   const supabase = await createClient();
   const {
@@ -86,6 +88,19 @@ export default async function WatchlistPage({
     };
   });
   type RowData = (typeof rows)[number];
+
+  // Entries that look like the same show and season, e.g. "S2 The Paper"
+  // and "The Paper S2", get flagged so one can be removed.
+  const keyCounts = new Map<string, number>();
+  for (const { item } of rows) {
+    const { key, base } = titleKey(item.title);
+    if (base) keyCounts.set(key, (keyCounts.get(key) ?? 0) + 1);
+  }
+  const looksDuplicated = (title: string) =>
+    (keyCounts.get(titleKey(title).key) ?? 0) > 1;
+  const duplicateCount = rows.filter((r) =>
+    looksDuplicated(r.item.title)
+  ).length;
 
   // Unwatched: what can be watched soonest comes first. Sort is stable,
   // so newest-added stays first within a group.
@@ -149,6 +164,9 @@ export default async function WatchlistPage({
                 <AvailabilityTag availability={availability} />
               </span>
             )}
+            {looksDuplicated(item.title) && (
+              <span className="data text-renewal">Possible duplicate</span>
+            )}
           </p>
         </div>
         <form action={removeWatchlistItem.bind(null, item.id)}>
@@ -174,6 +192,19 @@ export default async function WatchlistPage({
           Paste a list
         </Link>
       </div>
+
+      {dupe && (
+        <p role="status" className="mt-3 text-sm text-renewal">
+          Already on your list as &ldquo;{dupe}&rdquo;, so it wasn&apos;t added
+          again.
+        </p>
+      )}
+      {duplicateCount > 0 && (
+        <p className="mt-3 text-sm text-static">
+          {duplicateCount} titles look like duplicates of each other. They&apos;re
+          marked below so you can remove the extras.
+        </p>
+      )}
 
       {Number.isFinite(added) && (
         <p role="status" className="data mt-3 text-xs text-signal">
