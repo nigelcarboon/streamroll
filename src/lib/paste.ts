@@ -1,3 +1,5 @@
+import { titleKey } from "./titles";
+
 /**
  * Smart-paste: turn a pasted block of text (Apple Notes, a message, a
  * spreadsheet column) into watchlist entries. No content database yet,
@@ -26,6 +28,9 @@ const ALIASES: Record<string, string[]> = {
   "ABC iview": ["abc iview", "iview", "abc"],
   "SBS On Demand": ["sbs on demand", "sbs"],
   "10 Play": ["10 play", "10play", "ten play", "tenplay", "channel 10", "10"],
+  "7plus": ["7plus", "7 plus", "seven plus", "channel 7", "7"],
+  "9Now": ["9now", "9 now", "nine now", "channel 9", "9"],
+  YouTube: ["youtube", "yt"],
 };
 
 const MAX_LINES = 500;
@@ -119,7 +124,8 @@ export function parsePaste(
     const title = rawTitle.trim().slice(0, MAX_TITLE);
     if (!title) continue;
 
-    const key = title.toLowerCase();
+    // "The Paper S2" and "S2 The Paper" in one paste count once.
+    const key = titleKey(title).key;
     if (seen.has(key)) continue;
     seen.add(key);
     if (headingServiceId) titlesUnderHeading++;

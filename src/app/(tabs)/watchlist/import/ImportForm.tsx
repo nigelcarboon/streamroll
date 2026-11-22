@@ -2,39 +2,54 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { parsePaste } from "@/lib/paste";
+import { duplicateIndex } from "@/lib/titles";
 import { importWatchlist } from "./actions";
 
 type Service = { id: string; name: string };
 
-export function ImportForm({ services }: { services: Service[] }) {
+export function ImportForm({
+  services,
+  existingTitles,
+}: {
+  services: Service[];
+  existingTitles: string[];
+}) {
   const [text, setText] = useState("");
-  // Per-line edits made in the preview, keyed by title.
-  const [excluded, setExcluded] = useState<Set<string>>(new Set());
+  // Per-line choices made in the preview, keyed by title.
+  const [includeOverride, setIncludeOverride] = useState<
+    Record<string, boolean>
+  >({});
   const [serviceOverride, setServiceOverride] = useState<
     Record<string, string>
   >({});
   const [failed, setFailed] = useState(false);
   const [isPending, startTransition] = useTransition();
 
+  const findDuplicate = useMemo(
+    () => duplicateIndex(existingTitles),
+    [existingTitles]
+  );
   const parsed = useMemo(() => parsePaste(text, services), [text, services]);
-  const rows = parsed.map((row) => ({
-    ...row,
-    serviceId:
-      row.title in serviceOverride
-        ? serviceOverride[row.title] || null
-        : row.serviceId,
-    included: !excluded.has(row.title),
-  }));
+  const rows = parsed.map((row) => {
+    const duplicate = findDuplicate(row.title);
+    // Something already on the list starts unticked; tick it to add anyway.
+    const includedByDefault = duplicate?.kind !== "same";
+    return {
+      ...row,
+      duplicate,
+      serviceId:
+        row.title in serviceOverride
+          ? serviceOverride[row.title] || null
+          : row.serviceId,
+      included: includeOverride[row.title] ?? includedByDefault,
+    };
+  });
   const chosen = rows.filter((r) => r.included);
   const matched = chosen.filter((r) => r.serviceId).length;
+  const alreadyHave = rows.filter((r) => r.duplicate?.kind === "same").length;
 
-  function toggle(title: string) {
-    setExcluded((prev) => {
-      const next = new Set(prev);
-      if (next.has(title)) next.delete(title);
-      else next.add(title);
-      return next;
-    });
+  function toggle(title: string, current: boolean) {
+    setIncludeOverride((prev) => ({ ...prev, [title]: !current }));
   }
 
   function submit() {
@@ -69,6 +84,7 @@ export function ImportForm({ services }: { services: Service[] }) {
         <>
           <p className="data text-xs text-static">
             {chosen.length} to add · {matched} with a service
+            {alreadyHave > 0 && ` · ${alreadyHave} already on your list`}
           </p>
           <ul>
             {rows.map((row) => (
@@ -80,7 +96,7 @@ export function ImportForm({ services }: { services: Service[] }) {
                   id={`row-${row.title}`}
                   type="checkbox"
                   checked={row.included}
-                  onChange={() => toggle(row.title)}
+                  onChange={() => toggle(row.title, row.included)}
                   aria-label={`Include ${row.title}`}
                   className="h-5 w-5 shrink-0 accent-signal"
                 />
@@ -92,6 +108,17 @@ export function ImportForm({ services }: { services: Service[] }) {
                   >
                     {row.title}
                   </p>
+                  {row.duplicate?.kind === "same" && (
+                    <p className="text-xs text-renewal">
+                      Already on your list as &ldquo;{row.duplicate.existing}
+                      &rdquo;
+                    </p>
+                  )}
+                  {row.duplicate?.kind === "other-season" && (
+                    <p className="text-xs text-static">
+                      You also have &ldquo;{row.duplicate.existing}&rdquo;
+                    </p>
+                  )}
                   {row.watched && (
                     <p className="data text-xs text-static">Already watched</p>
                   )}

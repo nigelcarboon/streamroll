@@ -1,4 +1,4 @@
-// Hand-written to match supabase/migrations/0001-0003.
+// Hand-written to match supabase/migrations/0001-0006.
 // Once the Supabase project is live, regenerate with:
 //   npx supabase gen types typescript --project-id <ref> > src/lib/types/database.ts
 
@@ -32,18 +32,21 @@ export type Database = {
           name: string;
           colour: string;
           is_free: boolean;
+          user_id: string | null;
         };
         Insert: {
           id?: string;
           name: string;
           colour: string;
           is_free?: boolean;
+          user_id?: string | null;
         };
         Update: {
           id?: string;
           name?: string;
           colour?: string;
           is_free?: boolean;
+          user_id?: string | null;
         };
         Relationships: [];
       };
