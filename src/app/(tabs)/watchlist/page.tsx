@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ServiceDot } from "@/components/ServiceDot";
 import {
@@ -39,7 +40,15 @@ function AvailabilityTag({ availability }: { availability: Availability }) {
   }
 }
 
-export default async function WatchlistPage() {
+export default async function WatchlistPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ added?: string; skipped?: string }>;
+}) {
+  const params = await searchParams;
+  const added = Number.parseInt(params.added ?? "", 10);
+  const skipped = Number.parseInt(params.skipped ?? "", 10) || 0;
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -157,9 +166,21 @@ export default async function WatchlistPage() {
 
   return (
     <div className="px-6 py-8">
-      <h1 className="font-display text-2xl font-bold tracking-tight">
-        Watchlist
-      </h1>
+      <div className="flex items-baseline justify-between">
+        <h1 className="font-display text-2xl font-bold tracking-tight">
+          Watchlist
+        </h1>
+        <Link href="/watchlist/import" className="text-sm text-paper underline">
+          Paste a list
+        </Link>
+      </div>
+
+      {Number.isFinite(added) && (
+        <p role="status" className="data mt-3 text-xs text-signal">
+          Added {added}
+          {skipped > 0 && ` · ${skipped} already on the list`}
+        </p>
+      )}
 
       <form action={addWatchlistItem} className="mt-4 flex flex-col gap-2">
         <label htmlFor="title" className="sr-only">
